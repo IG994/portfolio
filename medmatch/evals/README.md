@@ -1,6 +1,6 @@
-# MedMatch — Evaluation
+# MedMatch: Evaluation
 
-Building the agent was half the work; the more important half was measuring whether it behaved *correctly and safely*. In a healthcare navigation context, "sounds good" isn't good enough — a wrong action can be a patient-safety issue. So we ran a structured evaluation and used the findings to iterate on the agent.
+One of the most critical pieces was evaluating whether the agent behaved *correctly and safely*. In a healthcare navigation context,  a wrong action can be a critical patient-safety issue. So we ran a structured evaluation and used the findings to iterate on the agent.
 
 ## Method
 
