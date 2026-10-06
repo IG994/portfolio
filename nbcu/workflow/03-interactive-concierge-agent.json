@@ -1,0 +1,614 @@
+{
+  "name": "Part 3 - Interactive AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 30
+      },
+      "id": "4aace023-5b83-409c-b80f-b1deb0442482",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "creator": "Lucas Peyrin",
+      "position": [
+        1584,
+        1664
+      ],
+      "typeVersion": 1.3,
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "624800cc-313a-4fb7-9610-218e141e524b",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "creator": "Lucas Peyrin",
+      "position": [
+        1104,
+        1648
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ejnJ72b49ox7m8XZ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true,
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "4100fa02-5444-4565-9696-04bca3d7fa3f",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "creator": "Lucas Peyrin",
+      "position": [
+        1344,
+        1664
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-nbc-part3",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1088,
+        1312
+      ],
+      "id": "707809a3-7962-4a96-87af-b1d4d7693ffc",
+      "name": "Webhook",
+      "webhookId": "223b6258-5522-4791-b1e9-ad6be428fa10"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2880,
+        1296
+      ],
+      "id": "f928deb1-f837-438e-addf-229c911d2730",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1189608011,
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1189608011"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Transform input').item.json.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        1648
+      ],
+      "id": "b7d67893-4f5e-4817-940a-459256ea68ff",
+      "name": "Get user details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1787556997,
+          "mode": "list",
+          "cachedResultName": "reservations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1787556997"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reservation_id": "={{ $fromAI('reservation_id', 'Unique reservation ID', 'string') }}",
+            "user_id": "={{ $fromAI('user_id', 'User ID making the reservation', 'string') }}",
+            "dining_id": "={{ $fromAI('dining_id', 'Dining place ID', 'string') }}",
+            "reservation_date": "={{ $fromAI('reservation_date', 'Date of reservation', 'string') }}",
+            "reservation_time": "={{ $fromAI('reservation_time', 'Time of reservation', 'string') }}",
+            "party_size": "={{ $fromAI('party_size', 'Number of guests', 'string') }}",
+            "status": "={{ $fromAI('status', 'Reservation status', 'string', 'confirmed') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "reservation_id",
+              "displayName": "reservation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dining_id",
+              "displayName": "dining_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reservation_date",
+              "displayName": "reservation_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reservation_time",
+              "displayName": "reservation_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "party_size",
+              "displayName": "party_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1952,
+        1648
+      ],
+      "id": "cd79c627-b952-43d3-b3da-89cdaea1ae23",
+      "name": "Confirm reservation",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Here is the modified prompt, updated to include a specific goal for handling user greetings while strictly adhering to your required JSON output format.\n\nI've replaced your placeholder <goal> with a detailed, actionable one that instructs the AI on exactly how to format the greeting message and what follow-up prompts to provide.\n\nModified n8n AI Agent Prompt\n<role> You are the Universal Studios Concierge AI Agent running inside n8n.\n\nYou are assisting the guest with userId: {{$json[\"userId\"]}}. Check for this user id and fetch data for only this id from any of the tables\n\nYour job is to communicate with the customer, automatically generate personalized full-day park itineraries, check for conflicting reservations, and return output as a JSON object. The JSON must include an HTML itinerary in a single line and a list of suggested follow-up prompts. The HTML must NOT contain CTAs, links, or next-step instructions of any kind. </role>\n\n<instructions>\n\n<goal> Handle User Greetings Whenever the user provides a simple greeting (e.g., \"hi\", \"hey\", \"hello\"), you must:\n\nCall get_user_details to fetch the guest's name (e.g., \"Jane\").\n\nRespond with a personalized greeting message.\n\nCrucially, you must follow the standard JSON output format:\n\nPlace the greeting inside &quot;response_message&quot; as simple, single-line HTML. (e.g., &quot;&lt;p&gt;Hi Jane! Welcome to the Universal Studios Concierge. How can I help you plan your day?&lt;/p&gt;&quot;)\n\nDo NOT generate a full itinerary for a simple greeting.\n\nProvide common next steps as an array in &quot;suggested_followup_prompts&quot;. (e.g., [&quot;Help me plan my full day&quot;, &quot;I need to book a dinner reservation&quot;, &quot;What are my existing reservations?&quot;]) </goal>\n\n<goal> Handle Itinerary & Booking Requests Whenever the user asks for an itinerary, day plan, schedule, recommendations, or similar, you must:\n\nGenerate a complete full-day itinerary (morning, afternoon, evening).\n\nPersonalize it using Google Sheets data (users, dining places, reservations, park experiences, schedules, conversations).\n\nOutput the itinerary as HTML only inside \"response_message\" with no newline characters and NO CTAs in the HTML.\n\nOutput all suggested actions / CTAs ONLY inside \"suggested_followup_prompts\".\n\nWhen the user explicitly asks to book a dining reservation, you MUST:\n\nFirst call get_reservations.\n\nCheck if an existing reservation for the same date has a time conflict (±180 minutes by default).\n\nIf a conflict exists:\n\nDo NOT call confirm_reservation.\n\nInform the user in natural language (inside follow-up prompts, not inside the HTML).\n\nSuggest alternative times or ask whether to overwrite the existing reservation.\n\nIf no conflict exists:\n\nProceed to call confirm_reservation with full parameters.\n\n</goal>\n\n<context>\n\nReservation Conflict Rules\nBefore confirming a reservation, ALWAYS:\n\nCall get_reservations for the current user.\n\nCompare the requested reservation date/time to each existing reservation:\n\nA conflict occurs if: same date AND requested time falls within ±90 minutes of an existing reservation time.\n\nIf conflict detected:\n\nDo NOT attempt to create a new reservation.\n\nDo NOT put warnings inside the HTML.\n\nPlace conflict-related language inside the \"suggested_followup_prompts\" array.\n\nOffer appropriate follow-up prompts such as:\n\n“You already have a reservation at 6:30 PM. Would you like to move this new reservation to 8:00 PM instead?”\n\n“Do you want me to replace your existing reservation with this one?”\n\nIf no conflict:\n\nProceed with confirm_reservation using the required parameters.\n\nHTML Requirements\nThe HTML inside \"response_message\":\n\nMust contain only the itinerary itself (or a simple greeting, per the first goal).\n\nMust NOT contain:\n\nAny CTAs\n\n“Next Steps” sections\n\nLinks\n\nButtons\n\nPrompts for booking or personalization\n\nShould follow this structure for itineraries:\n\n<div class=\"itinerary\"> <header>...</header> <section class=\"guest-overview\">...</section> <section class=\"itinerary-section morning\">...</section> <section class=\"itinerary-section afternoon\">...</section> <section class=\"itinerary-section evening\">...</section> </div>\n\nUse headings, paragraphs, lists, and cards, but no CTA section.\n\nCTA / Follow-Up Rules\nCTAs must appear only in \"suggested_followup_prompts\".\n\nTypical follow-ups:\n\n“Can you book lunch at Mythos Restaurant around 1 PM?”\n\n“Show me a kid-friendly version of this itinerary.”\n\n“Swap the evening activity for a CityWalk dinner.”\n\n“Check my existing reservations and adjust the times.”\n\n“Fix the scheduling conflict by moving my dinner earlier.”\n\nTools You Must Use\nYou must use these tools when required:\n\nget_user_details\n\nget_dining_places\n\nget_reservations (required before every reservation confirmation)\n\nget_experiences\n\nget_experience_schedule\n\nconfirm_reservation (only if conflict-free and explicitly requested)\n\nJSON Output Format (required)\nAlways return this exact structure:\n\n{ \"response_message\": \"<HTML content here, must be a single line, no newline characters>\", \"suggested_followup_prompts\": [ \"Follow-up prompt 1\", \"Follow-up prompt 2\", \"Follow-up prompt 3\" ] }\n\nRules:\n\n\"response_message\" must contain ONLY HTML, condensed into a single line.\n\n\"suggested_followup_prompts\" must contain CTA messages only (no HTML, no explanation).\n\nNEVER include warnings or conflict messages inside the HTML — they go only inside suggested_followup_prompts.\n\n</output_format> </instructions>"
+        }
+      },
+      "id": "cd0e7167-a293-4565-b689-3162c45cd42b",
+      "cid": "Ikx1Y2FzIFBleXJpbiI",
+      "name": "NBCAgent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "creator": "Lucas Peyrin",
+      "position": [
+        1936,
+        1296
+      ],
+      "typeVersion": 2,
+      "notes": "© 2025 Lucas Peyrin"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1787556997,
+          "mode": "list",
+          "cachedResultName": "reservations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1787556997"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('Transform input').item.json.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        1648
+      ],
+      "id": "10bef92d-4157-42c2-92f6-245fabc24604",
+      "name": "Get reservations",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 674262112,
+          "mode": "list",
+          "cachedResultName": "dining places",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=674262112"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2256,
+        1648
+      ],
+      "id": "b8f6e78d-f557-4eef-9caa-79974b8d4014",
+      "name": "Get dining places",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 933418064,
+          "mode": "list",
+          "cachedResultName": "park_experiences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=933418064"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2416,
+        1648
+      ],
+      "id": "b9325eb3-7b3d-4231-859b-018b340bbca7",
+      "name": "Get experiences",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1660453995,
+          "mode": "list",
+          "cachedResultName": "experience_schedule",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1660453995"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        1648
+      ],
+      "id": "e9ab9d4c-f51f-427b-b7d6-f540a0685f37",
+      "name": "Get Experience Schedule",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "instructions": "output of NBCAgent is a stringified json, convert that to a json with fields as \"response_message\" and \"suggested_followup_prompts\"",
+        "codeGeneratedForPrompt": "output of NBCAgent is a stringified json, convert that to a json with fields as \"response_message\" and \"suggested_followup_prompts\"",
+        "jsCode": "const items = $input.all();\nconst parsedItems = items.map((item) => {\n  const parsedOutput = JSON.parse(item?.json?.output);\n  return {\n    response_message: parsedOutput.response_message,\n    suggested_followup_prompts: parsedOutput.suggested_followup_prompts,\n  };\n});\nreturn parsedItems;\n"
+      },
+      "type": "n8n-nodes-base.aiTransform",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        1296
+      ],
+      "id": "de83dd50-5b02-41a8-8bbb-86281467f781",
+      "name": "AI Transform"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "355a4f57-5af6-4126-b18f-6aa5f8da4d20",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "159de3e9-687b-4187-9e5f-4f81bcbde64f",
+              "name": "chatInput",
+              "value": "={{ $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "cb6bf35a-58d5-48b8-836d-860b5196878e",
+              "name": "userId",
+              "value": "={{ $json.body.userId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        1296
+      ],
+      "id": "e901a5b1-816a-457d-88b3-f0b7644871a6",
+      "name": "Transform input"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Transform input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get user details": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm reservation": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NBCAgent": {
+      "main": [
+        [
+          {
+            "node": "AI Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get reservations": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dining places": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get experiences": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Experience Schedule": {
+      "ai_tool": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Transform": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform input": {
+      "main": [
+        [
+          {
+            "node": "NBCAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "a0b11253-1641-49ba-b4a3-c9d1810621bd",
+  "meta": {
+    "templateId": "5819",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "69e1ddac7a7b576688b1cd297256ec65998e2b52c5bc796852362e1682002b95"
+  },
+  "id": "MDMHzxojp57Vsv4r",
+  "tags": []
+}

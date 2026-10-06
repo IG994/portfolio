@@ -1,0 +1,867 @@
+{
+  "name": "MedMatch Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a professional, calm, and helpful healthcare navigation assistant that helps users find the right doctor quickly and efficiently. You reduce the complexity of healthcare scheduling by interpreting user needs, retrieving relevant providers, and delivering clear, actionable recommendations.\n\nYour Capabilities\nYou can:\n- Map user symptoms or requests to the appropriate medical specialty\n- Identify the user's search criteria, including location, insurance, urgency, and provider preferences\n- Prepare structured search inputs for the Zocdoc Scraper (Apify)\n- Ask concise follow-up questions only when essential information is missing\n- Flag urgent or emergency situations before proceeding. If something is urgent, be clear that the user should call 911 to receive help. \n\n\nImportant Rules\n1. Do not provide medical diagnosis, treatment advice, or clinical recommendations, even if prompted. If continuously asked, remind the user that you do not have the ability to provide these details, but can find them a relevant medical expert who can. \n2. Do not book appointments or take actions without explicit user confirmation\n3. If user input is unclear or incomplete, ask the minimum number of clarifying questions needed to proceed\n4. If symptoms suggest a potential emergency, clearly advise the user to seek immediate medical attention. Prompt the user to call 911 for urgent help. \n6. NEVER ask for specialty or location if either has already been provided — infer and proceed immediately\n7. If a zip code or city is provided, always treat that as sufficient location information and proceed without asking for more. Additionally, translate that into the corresponding city and state for the JSON\n8. Default specialty to \"Primary Care\" if the user mentions a general checkup, annual visit, or does not specify a specialty\n\nHow to Handle Edge Cases\n- When the request is ambiguous, ask targeted follow-up questions such as urgency, symptoms, or preferences\n- When location OR insurance is missing, prompt the user before retrieving results — but if location is provided as a zip code, city, or neighborhood, always proceed\n- When urgency is high or unclear, prioritise availability or ask a clarifying question\n- When no prior user data exists, ask for required details and proceed as a new search\n\nOutput Instructions\nYour role in this step is to convert the user's request into structured search parameters.\n\nCRITICAL: If the user provides a location (zip code, city, neighborhood) and any indication of what they need, output JSON immediately without asking any clarifying questions.\n\nReturn either:\n- a concise clarifying question, if essential information is missing or the request is too ambiguous to proceed safely\nor\n- valid JSON only containing the following key-value pairs: speciality, location, urgency, insurance, and preferences. Each key-value should be able to be indexed separately. If a key doesn't have a corresponding value from the input, make the value blank\n\nRules for JSON output:\n- Return only valid JSON, with no markdown or extra explanation\n- Infer the specialty when the user's symptoms are clear enough\n- Default to \"Primary Care\" if no specialty or symptoms are mentioned\n- For location, always use the exact city provided by the user. If zip code is provided, map that back to a city and state to populate the JSON with\n\nCommunication Style\n- Professional, calm, and trustworthy\n- Concise and structured, focused on actionable outputs\n- Uses clear comparisons and short explanations to support decision-making\n- Asks clarifying questions only when necessary"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "43223263-3396-4673-929f-54776514da86",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        304
+      ],
+      "id": "255dc5c8-7bb9-4af8-9026-99ca33946e1e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "T1nOQNpwUcgFvHpU",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"specialty\": \"Primary Care\",\n  \"state\": \"California\",\n\t\"city\": \"Los Angeles\",\n  \"zip code\": \"10009\",\n  \"insurance\": \"Cigna\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        288
+      ],
+      "id": "2f9afe01-ae21-4b7c-95c9-594f6f563f91",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "const httpRequestData = $input.all()[0]?.json?.data;\nconst providerData = JSON.parse(httpRequestData);\nreturn providerData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "baeb5563-371e-46b1-9c98-46d3ad51df33",
+      "name": "JSON Cleaner"
+    },
+    {
+      "parameters": {
+        "url": "http://raw.githubusercontent.com/mahistern/MedMatch/refs/heads/main/zocdocHardCode.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        160,
+        0
+      ],
+      "id": "669fb845-619c-4db4-9386-c92d7b14a59e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {
+          "includeBinaries": false
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        848,
+        0
+      ],
+      "id": "b5ed81d1-d96e-47d7-aad8-d771404ea3c1",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fcfaec23-88ac-49d2-816d-e88ee8f7f44b",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -592,
+        0
+      ],
+      "id": "a4f060aa-ccc8-4b1c-a80d-878b5d7ef67d",
+      "name": "Webhook",
+      "webhookId": "fcfaec23-88ac-49d2-816d-e88ee8f7f44b"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "8665925a-5711-4960-bf91-879fe4a24dc3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        336
+      ],
+      "id": "d49c0b92-ff82-41b3-bbc6-4115e9f557e2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=If what the user is describing in the request here: {{ $('Webhook').item.json.body.chatInput }} suggests a potential emergency / the classification is 'Emergency Medicine', IGNORE all instructions below and clearly advise the user to seek immediate medical attention. Prompt the user to call 911 for urgent help. Do not provide medical diagnosis, treatment advice, or clinical recommendations, even if prompted. If continuously asked, remind the user that you do not have the ability to provide these details, but can find them a relevant medical expert who can (if they do not want to call 911).\n\nOtherwise, loop through the following JSON data: {{ JSON.stringify($json.data) }} and identify the doctor names (name), their corresponding ratings, and address whose location information (address) matches the location request here: {{ $('Webhook').item.json.body.chatInput }} and the specialty here: {{ $('AI Agent').item.json.output.specialty }}. If there is no specialty match, default to Primary Care.\n\nFrom there, provide the user an ordered list of doctors that are accepting new patients (accepting_new_patients = true). The list order should be determined by soonest availability (next_available), then physician rating, then physician location. Only provide the top 5, or less if there are not 5 matches. \n\nFormat the output as follows (but as a numbered list):\n\"\nProviderName - rating out of 5\nAddress: [insert address here]\nNext availability: format data from next_available var as MM/DD/YY time\nPhone: phone\n\"\n\nDo not communicate that you've parsed a JSON or include any technical jargon. Instead it should seem like you're answering {{ $('Webhook').item.json.body.chatInput }} without any of the intermediary/middle-man steps. Still include a brief intro for the answer that's short but friendly/personable, indicating that you're happy to help with the task and that you've found some results. This should indicate the types of doctors you've found for them. Do not suggest that you can book an appointment for them. Just say you can find more options if needed. "
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "ed34e5cb-aa53-41bf-8350-be7caf03e9fd",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "QVZ3kEwOe5h1HU2y",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "AI Agent": [
+      {
+        "json": {
+          "output": {
+            "specialty": "Primary Care",
+            "state": "NY",
+            "city": "New York",
+            "zip code": "10016",
+            "insurance": ""
+          }
+        }
+      }
+    ],
+    "HTTP Request": [
+      {
+        "json": {
+          "data": "[\n  {\n    \"doctor_id\": \"DOC001\",\n    \"name\": \"Dr. Sarah Kim, MD\",\n    \"specialty\": \"Primary Care Physician\",\n    \"sub_specialty\": \"Internal Medicine\",\n    \"practice_name\": \"NYU Langone Primary Care\",\n    \"address\": {\n      \"street\": \"240 E 38th St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip\": \"10016\"\n    },\n    \"distance_from_user_miles\": 0.3,\n    \"contact\": {\n      \"phone\": \"(212) 555-0192\",\n      \"website\": \"https://nyulangone.org/doctors/sarah-kim\"\n    },\n    \"ratings\": {\n      \"overall\": 4.8,\n      \"bedside_manner\": 4.9,\n      \"wait_time\": 4.5,\n      \"staff_friendliness\": 4.7,\n      \"total_reviews\": 312\n    },\n    \"insurance\": {\n      \"accepted\": [\"Aetna\", \"BlueCross BlueShield\", \"Cigna\", \"UnitedHealthcare\", \"Medicare\"],\n      \"user_insurance_match\": true\n    },\n    \"availability\": {\n      \"accepting_new_patients\": true,\n      \"next_available\": \"2026-04-12T10:00:00\",\n      \"days_until_available\": 1,\n      \"available_slots\": [\"10:00 AM\", \"2:30 PM\", \"4:00 PM\"]\n    },\n    \"visit_types\": [\"Annual Checkup\", \"Sick Visit\", \"Telehealth\"],\n    \"copay_estimate\": \"$0\",\n    \"booking_link\": \"https://nyulangone.org/book/sarah-kim\",\n    \"composite_score\": 94\n  },\n  {\n    \"doctor_id\": \"DOC002\",\n    \"name\": \"Dr. James Patel, MD\",\n    \"specialty\": \"Primary Care Physician\",\n    \"sub_specialty\": \"Family Medicine\",\n    \"practice_name\": \"Gramercy Park Medical\",\n    \"address\": {\n      \"street\": \"10 Gramercy Park S\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip\": \"10003\"\n    },\n    \"distance_from_user_miles\": 0.5,\n    \"contact\": {\n      \"phone\": \"(212) 555-0347\",\n      \"website\": \"https://gramercyparkmedical.com/james-patel\"\n    },\n    \"ratings\": {\n      \"overall\": 4.6,\n      \"bedside_manner\": 4.7,\n      \"wait_time\": 4.4,\n      \"staff_friendliness\": 4.5,\n      \"total_reviews\": 198\n    },\n    \"insurance\": {\n      \"accepted\": [\"BlueCross BlueShield\", \"Cigna\", \"Humana\", \"Medicare\", \"Medicaid\"],\n      \"user_insurance_match\": true\n    },\n    \"availability\": {\n      \"accepting_new_patients\": true,\n      \"next_available\": \"2026-04-14T14:00:00\",\n      \"days_until_available\": 3,\n      \"available_slots\": [\"2:00 PM\", \"3:30 PM\"]\n    },\n    \"visit_types\": [\"Annual Checkup\", \"Sick Visit\", \"Telehealth\", \"Pediatric Care\"],\n    \"copay_estimate\": \"$0\",\n    \"booking_link\": \"https://gramercyparkmedical.com/book/james-patel\",\n    \"composite_score\": 88\n  },\n  {\n    \"doctor_id\": \"DOC003\",\n    \"name\": \"Dr. Lisa Chen, MD\",\n    \"specialty\": \"Primary Care Physician\",\n    \"sub_specialty\": \"Internal Medicine\",\n    \"practice_name\": \"Mount Sinai Downtown\",\n    \"address\": {\n      \"street\": \"317 E 17th St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip\": \"10003\"\n    },\n    \"distance_from_user_miles\": 0.8,\n    \"contact\": {\n      \"phone\": \"(212) 555-0281\",\n      \"website\": \"https://mountsinai.org/doctors/lisa-chen\"\n    },\n    \"ratings\": {\n      \"overall\": 4.5,\n      \"bedside_manner\": 4.6,\n      \"wait_time\": 4.2,\n      \"staff_friendliness\": 4.4,\n      \"total_reviews\": 245\n    },\n    \"insurance\": {\n      \"accepted\": [\"Aetna\", \"UnitedHealthcare\", \"Oxford\", \"Medicare\", \"EmblemHealth\"],\n      \"user_insurance_match\": true\n    },\n    \"availability\": {\n      \"accepting_new_patients\": true,\n      \"next_available\": \"2026-04-15T09:00:00\",\n      \"days_until_available\": 4,\n      \"available_slots\": [\"9:00 AM\", \"11:30 AM\", \"1:00 PM\"]\n    },\n    \"visit_types\": [\"Annual Checkup\", \"Sick Visit\", \"Telehealth\", \"Women's Health\"],\n    \"copay_estimate\": \"$0\",\n    \"booking_link\": \"https://mountsinai.org/book/lisa-chen\",\n    \"composite_score\": 85\n  },\n  {\n    \"doctor_id\": \"DOC004\",\n    \"name\": \"Dr. Michael Torres, MD\",\n    \"specialty\": \"Primary Care Physician\",\n    \"sub_specialty\": \"Family Medicine\",\n    \"practice_name\": \"Chelsea Medical Group\",\n    \"address\": {\n      \"street\": \"156 W 23rd St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip\": \"10011\"\n    },\n    \"distance_from_user_miles\": 1.2,\n    \"contact\": {\n      \"phone\": \"(212) 555-0419\",\n      \"website\": \"https://chelseamedicalgroup.com/michael-torres\"\n    },\n    \"ratings\": {\n      \"overall\": 4.3,\n      \"bedside_manner\": 4.4,\n      \"wait_time\": 4.0,\n      \"staff_friendliness\": 4.2,\n      \"total_reviews\": 167\n    },\n    \"insurance\": {\n      \"accepted\": [\"Cigna\", \"Aetna\", \"BlueCross BlueShield\", \"Oscar Health\"],\n      \"user_insurance_match\": false\n    },\n    \"availability\": {\n      \"accepting_new_patients\": true,\n      \"next_available\": \"2026-04-11T15:30:00\",\n      \"days_until_available\": 0,\n      \"available_slots\": [\"3:30 PM\", \"4:30 PM\"]\n    },\n    \"visit_types\": [\"Annual Checkup\", \"Sick Visit\", \"Sports Medicine\"],\n    \"copay_estimate\": \"Out of network — estimate $150\",\n    \"booking_link\": \"https://chelseamedicalgroup.com/book/michael-torres\",\n    \"composite_score\": 72\n  },\n  {\n    \"doctor_id\": \"DOC005\",\n    \"name\": \"Dr. Priya Sharma, MD\",\n    \"specialty\": \"Primary Care Physician\",\n    \"sub_specialty\": \"Internal Medicine\",\n    \"practice_name\": \"Flatiron Health Associates\",\n    \"address\": {\n      \"street\": \"45 W 20th St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"zip\": \"10011\"\n    },\n    \"distance_from_user_miles\": 1.5,\n    \"contact\": {\n      \"phone\": \"(212) 555-0563\",\n      \"website\": \"https://flatironhealth.com/priya-sharma\"\n    },\n    \"ratings\": {\n      \"overall\": 4.7,\n      \"bedside_manner\": 4.8,\n      \"wait_time\": 4.3,\n      \"staff_friendliness\": 4.6,\n      \"total_reviews\": 289\n    },\n    \"insurance\": {\n      \"accepted\": [\"Aetna\", \"BlueCross BlueShield\", \"Cigna\", \"UnitedHealthcare\", \"Oscar Health\", \"Medicare\"],\n      \"user_insurance_match\": true\n    },\n    \"availability\": {\n      \"accepting_new_patients\": false,\n      \"next_available\": null,\n      \"days_until_available\": null,\n      \"available_slots\": []\n    },\n    \"visit_types\": [\"Annual Checkup\", \"Sick Visit\", \"Telehealth\"],\n    \"copay_estimate\": \"$0\",\n    \"booking_link\": null,\n    \"composite_score\": 65\n  }\n]\n"
+        }
+      }
+    ],
+    "JSON Cleaner": [
+      {
+        "json": {
+          "doctor_id": "DOC001",
+          "name": "Dr. Sarah Kim, MD",
+          "specialty": "Primary Care Physician",
+          "sub_specialty": "Internal Medicine",
+          "practice_name": "NYU Langone Primary Care",
+          "address": {
+            "street": "240 E 38th St",
+            "city": "New York",
+            "state": "NY",
+            "zip": "10016"
+          },
+          "distance_from_user_miles": 0.3,
+          "contact": {
+            "phone": "(212) 555-0192",
+            "website": "https://nyulangone.org/doctors/sarah-kim"
+          },
+          "ratings": {
+            "overall": 4.8,
+            "bedside_manner": 4.9,
+            "wait_time": 4.5,
+            "staff_friendliness": 4.7,
+            "total_reviews": 312
+          },
+          "insurance": {
+            "accepted": [
+              "Aetna",
+              "BlueCross BlueShield",
+              "Cigna",
+              "UnitedHealthcare",
+              "Medicare"
+            ],
+            "user_insurance_match": true
+          },
+          "availability": {
+            "accepting_new_patients": true,
+            "next_available": "2026-04-12T10:00:00",
+            "days_until_available": 1,
+            "available_slots": [
+              "10:00 AM",
+              "2:30 PM",
+              "4:00 PM"
+            ]
+          },
+          "visit_types": [
+            "Annual Checkup",
+            "Sick Visit",
+            "Telehealth"
+          ],
+          "copay_estimate": "$0",
+          "booking_link": "https://nyulangone.org/book/sarah-kim",
+          "composite_score": 94
+        }
+      },
+      {
+        "json": {
+          "doctor_id": "DOC002",
+          "name": "Dr. James Patel, MD",
+          "specialty": "Primary Care Physician",
+          "sub_specialty": "Family Medicine",
+          "practice_name": "Gramercy Park Medical",
+          "address": {
+            "street": "10 Gramercy Park S",
+            "city": "New York",
+            "state": "NY",
+            "zip": "10003"
+          },
+          "distance_from_user_miles": 0.5,
+          "contact": {
+            "phone": "(212) 555-0347",
+            "website": "https://gramercyparkmedical.com/james-patel"
+          },
+          "ratings": {
+            "overall": 4.6,
+            "bedside_manner": 4.7,
+            "wait_time": 4.4,
+            "staff_friendliness": 4.5,
+            "total_reviews": 198
+          },
+          "insurance": {
+            "accepted": [
+              "BlueCross BlueShield",
+              "Cigna",
+              "Humana",
+              "Medicare",
+              "Medicaid"
+            ],
+            "user_insurance_match": true
+          },
+          "availability": {
+            "accepting_new_patients": true,
+            "next_available": "2026-04-14T14:00:00",
+            "days_until_available": 3,
+            "available_slots": [
+              "2:00 PM",
+              "3:30 PM"
+            ]
+          },
+          "visit_types": [
+            "Annual Checkup",
+            "Sick Visit",
+            "Telehealth",
+            "Pediatric Care"
+          ],
+          "copay_estimate": "$0",
+          "booking_link": "https://gramercyparkmedical.com/book/james-patel",
+          "composite_score": 88
+        }
+      },
+      {
+        "json": {
+          "doctor_id": "DOC003",
+          "name": "Dr. Lisa Chen, MD",
+          "specialty": "Primary Care Physician",
+          "sub_specialty": "Internal Medicine",
+          "practice_name": "Mount Sinai Downtown",
+          "address": {
+            "street": "317 E 17th St",
+            "city": "New York",
+            "state": "NY",
+            "zip": "10003"
+          },
+          "distance_from_user_miles": 0.8,
+          "contact": {
+            "phone": "(212) 555-0281",
+            "website": "https://mountsinai.org/doctors/lisa-chen"
+          },
+          "ratings": {
+            "overall": 4.5,
+            "bedside_manner": 4.6,
+            "wait_time": 4.2,
+            "staff_friendliness": 4.4,
+            "total_reviews": 245
+          },
+          "insurance": {
+            "accepted": [
+              "Aetna",
+              "UnitedHealthcare",
+              "Oxford",
+              "Medicare",
+              "EmblemHealth"
+            ],
+            "user_insurance_match": true
+          },
+          "availability": {
+            "accepting_new_patients": true,
+            "next_available": "2026-04-15T09:00:00",
+            "days_until_available": 4,
+            "available_slots": [
+              "9:00 AM",
+              "11:30 AM",
+              "1:00 PM"
+            ]
+          },
+          "visit_types": [
+            "Annual Checkup",
+            "Sick Visit",
+            "Telehealth",
+            "Women's Health"
+          ],
+          "copay_estimate": "$0",
+          "booking_link": "https://mountsinai.org/book/lisa-chen",
+          "composite_score": 85
+        }
+      },
+      {
+        "json": {
+          "doctor_id": "DOC004",
+          "name": "Dr. Michael Torres, MD",
+          "specialty": "Primary Care Physician",
+          "sub_specialty": "Family Medicine",
+          "practice_name": "Chelsea Medical Group",
+          "address": {
+            "street": "156 W 23rd St",
+            "city": "New York",
+            "state": "NY",
+            "zip": "10011"
+          },
+          "distance_from_user_miles": 1.2,
+          "contact": {
+            "phone": "(212) 555-0419",
+            "website": "https://chelseamedicalgroup.com/michael-torres"
+          },
+          "ratings": {
+            "overall": 4.3,
+            "bedside_manner": 4.4,
+            "wait_time": 4,
+            "staff_friendliness": 4.2,
+            "total_reviews": 167
+          },
+          "insurance": {
+            "accepted": [
+              "Cigna",
+              "Aetna",
+              "BlueCross BlueShield",
+              "Oscar Health"
+            ],
+            "user_insurance_match": false
+          },
+          "availability": {
+            "accepting_new_patients": true,
+            "next_available": "2026-04-11T15:30:00",
+            "days_until_available": 0,
+            "available_slots": [
+              "3:30 PM",
+              "4:30 PM"
+            ]
+          },
+          "visit_types": [
+            "Annual Checkup",
+            "Sick Visit",
+            "Sports Medicine"
+          ],
+          "copay_estimate": "Out of network — estimate $150",
+          "booking_link": "https://chelseamedicalgroup.com/book/michael-torres",
+          "composite_score": 72
+        }
+      },
+      {
+        "json": {
+          "doctor_id": "DOC005",
+          "name": "Dr. Priya Sharma, MD",
+          "specialty": "Primary Care Physician",
+          "sub_specialty": "Internal Medicine",
+          "practice_name": "Flatiron Health Associates",
+          "address": {
+            "street": "45 W 20th St",
+            "city": "New York",
+            "state": "NY",
+            "zip": "10011"
+          },
+          "distance_from_user_miles": 1.5,
+          "contact": {
+            "phone": "(212) 555-0563",
+            "website": "https://flatironhealth.com/priya-sharma"
+          },
+          "ratings": {
+            "overall": 4.7,
+            "bedside_manner": 4.8,
+            "wait_time": 4.3,
+            "staff_friendliness": 4.6,
+            "total_reviews": 289
+          },
+          "insurance": {
+            "accepted": [
+              "Aetna",
+              "BlueCross BlueShield",
+              "Cigna",
+              "UnitedHealthcare",
+              "Oscar Health",
+              "Medicare"
+            ],
+            "user_insurance_match": true
+          },
+          "availability": {
+            "accepting_new_patients": false,
+            "next_available": null,
+            "days_until_available": null,
+            "available_slots": []
+          },
+          "visit_types": [
+            "Annual Checkup",
+            "Sick Visit",
+            "Telehealth"
+          ],
+          "copay_estimate": "$0",
+          "booking_link": null,
+          "composite_score": 65
+        }
+      }
+    ],
+    "Aggregate": [
+      {
+        "json": {
+          "data": [
+            {
+              "doctor_id": "DOC001",
+              "name": "Dr. Sarah Kim, MD",
+              "specialty": "Primary Care Physician",
+              "sub_specialty": "Internal Medicine",
+              "practice_name": "NYU Langone Primary Care",
+              "address": {
+                "street": "240 E 38th St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10016"
+              },
+              "distance_from_user_miles": 0.3,
+              "contact": {
+                "phone": "(212) 555-0192",
+                "website": "https://nyulangone.org/doctors/sarah-kim"
+              },
+              "ratings": {
+                "overall": 4.8,
+                "bedside_manner": 4.9,
+                "wait_time": 4.5,
+                "staff_friendliness": 4.7,
+                "total_reviews": 312
+              },
+              "insurance": {
+                "accepted": [
+                  "Aetna",
+                  "BlueCross BlueShield",
+                  "Cigna",
+                  "UnitedHealthcare",
+                  "Medicare"
+                ],
+                "user_insurance_match": true
+              },
+              "availability": {
+                "accepting_new_patients": true,
+                "next_available": "2026-04-12T10:00:00",
+                "days_until_available": 1,
+                "available_slots": [
+                  "10:00 AM",
+                  "2:30 PM",
+                  "4:00 PM"
+                ]
+              },
+              "visit_types": [
+                "Annual Checkup",
+                "Sick Visit",
+                "Telehealth"
+              ],
+              "copay_estimate": "$0",
+              "booking_link": "https://nyulangone.org/book/sarah-kim",
+              "composite_score": 94
+            },
+            {
+              "doctor_id": "DOC002",
+              "name": "Dr. James Patel, MD",
+              "specialty": "Primary Care Physician",
+              "sub_specialty": "Family Medicine",
+              "practice_name": "Gramercy Park Medical",
+              "address": {
+                "street": "10 Gramercy Park S",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10003"
+              },
+              "distance_from_user_miles": 0.5,
+              "contact": {
+                "phone": "(212) 555-0347",
+                "website": "https://gramercyparkmedical.com/james-patel"
+              },
+              "ratings": {
+                "overall": 4.6,
+                "bedside_manner": 4.7,
+                "wait_time": 4.4,
+                "staff_friendliness": 4.5,
+                "total_reviews": 198
+              },
+              "insurance": {
+                "accepted": [
+                  "BlueCross BlueShield",
+                  "Cigna",
+                  "Humana",
+                  "Medicare",
+                  "Medicaid"
+                ],
+                "user_insurance_match": true
+              },
+              "availability": {
+                "accepting_new_patients": true,
+                "next_available": "2026-04-14T14:00:00",
+                "days_until_available": 3,
+                "available_slots": [
+                  "2:00 PM",
+                  "3:30 PM"
+                ]
+              },
+              "visit_types": [
+                "Annual Checkup",
+                "Sick Visit",
+                "Telehealth",
+                "Pediatric Care"
+              ],
+              "copay_estimate": "$0",
+              "booking_link": "https://gramercyparkmedical.com/book/james-patel",
+              "composite_score": 88
+            },
+            {
+              "doctor_id": "DOC003",
+              "name": "Dr. Lisa Chen, MD",
+              "specialty": "Primary Care Physician",
+              "sub_specialty": "Internal Medicine",
+              "practice_name": "Mount Sinai Downtown",
+              "address": {
+                "street": "317 E 17th St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10003"
+              },
+              "distance_from_user_miles": 0.8,
+              "contact": {
+                "phone": "(212) 555-0281",
+                "website": "https://mountsinai.org/doctors/lisa-chen"
+              },
+              "ratings": {
+                "overall": 4.5,
+                "bedside_manner": 4.6,
+                "wait_time": 4.2,
+                "staff_friendliness": 4.4,
+                "total_reviews": 245
+              },
+              "insurance": {
+                "accepted": [
+                  "Aetna",
+                  "UnitedHealthcare",
+                  "Oxford",
+                  "Medicare",
+                  "EmblemHealth"
+                ],
+                "user_insurance_match": true
+              },
+              "availability": {
+                "accepting_new_patients": true,
+                "next_available": "2026-04-15T09:00:00",
+                "days_until_available": 4,
+                "available_slots": [
+                  "9:00 AM",
+                  "11:30 AM",
+                  "1:00 PM"
+                ]
+              },
+              "visit_types": [
+                "Annual Checkup",
+                "Sick Visit",
+                "Telehealth",
+                "Women's Health"
+              ],
+              "copay_estimate": "$0",
+              "booking_link": "https://mountsinai.org/book/lisa-chen",
+              "composite_score": 85
+            },
+            {
+              "doctor_id": "DOC004",
+              "name": "Dr. Michael Torres, MD",
+              "specialty": "Primary Care Physician",
+              "sub_specialty": "Family Medicine",
+              "practice_name": "Chelsea Medical Group",
+              "address": {
+                "street": "156 W 23rd St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10011"
+              },
+              "distance_from_user_miles": 1.2,
+              "contact": {
+                "phone": "(212) 555-0419",
+                "website": "https://chelseamedicalgroup.com/michael-torres"
+              },
+              "ratings": {
+                "overall": 4.3,
+                "bedside_manner": 4.4,
+                "wait_time": 4,
+                "staff_friendliness": 4.2,
+                "total_reviews": 167
+              },
+              "insurance": {
+                "accepted": [
+                  "Cigna",
+                  "Aetna",
+                  "BlueCross BlueShield",
+                  "Oscar Health"
+                ],
+                "user_insurance_match": false
+              },
+              "availability": {
+                "accepting_new_patients": true,
+                "next_available": "2026-04-11T15:30:00",
+                "days_until_available": 0,
+                "available_slots": [
+                  "3:30 PM",
+                  "4:30 PM"
+                ]
+              },
+              "visit_types": [
+                "Annual Checkup",
+                "Sick Visit",
+                "Sports Medicine"
+              ],
+              "copay_estimate": "Out of network — estimate $150",
+              "booking_link": "https://chelseamedicalgroup.com/book/michael-torres",
+              "composite_score": 72
+            },
+            {
+              "doctor_id": "DOC005",
+              "name": "Dr. Priya Sharma, MD",
+              "specialty": "Primary Care Physician",
+              "sub_specialty": "Internal Medicine",
+              "practice_name": "Flatiron Health Associates",
+              "address": {
+                "street": "45 W 20th St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10011"
+              },
+              "distance_from_user_miles": 1.5,
+              "contact": {
+                "phone": "(212) 555-0563",
+                "website": "https://flatironhealth.com/priya-sharma"
+              },
+              "ratings": {
+                "overall": 4.7,
+                "bedside_manner": 4.8,
+                "wait_time": 4.3,
+                "staff_friendliness": 4.6,
+                "total_reviews": 289
+              },
+              "insurance": {
+                "accepted": [
+                  "Aetna",
+                  "BlueCross BlueShield",
+                  "Cigna",
+                  "UnitedHealthcare",
+                  "Oscar Health",
+                  "Medicare"
+                ],
+                "user_insurance_match": true
+              },
+              "availability": {
+                "accepting_new_patients": false,
+                "next_available": null,
+                "days_until_available": null,
+                "available_slots": []
+              },
+              "visit_types": [
+                "Annual Checkup",
+                "Sick Visit",
+                "Telehealth"
+              ],
+              "copay_estimate": "$0",
+              "booking_link": null,
+              "composite_score": 65
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Cleaner": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "JSON Cleaner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "any",
+    "availableInMCP": false
+  },
+  "versionId": "5e49fec0-82d2-4d2f-81f7-00f89a46efd1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcfe746786d470a933fcc6dc4ec019bca4b5d57987c746388898e39424638c0"
+  },
+  "nodeGroups": [],
+  "id": "idc1H8aGIJQpIcB1",
+  "tags": []
+}

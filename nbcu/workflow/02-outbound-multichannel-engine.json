@@ -1,0 +1,851 @@
+{
+  "name": "Part 2 - NBC",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "bfdab6e0-94bc-45d0-aef8-e9545a1d4890",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2048,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.output.preferred_channel }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "voice"
+            },
+            {
+              "value2": "text",
+              "output": 1
+            },
+            {
+              "value2": "email",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "c6f4ab9d-c727-4f48-a46c-aa1b1e691c34",
+      "name": "Route By Channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.example.com/chat-memory",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "bce58671-79ee-434a-bd15-71ba80ac8b53",
+      "name": "Chat Memory (store)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        48,
+        400
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://sms-provider.example.com/send",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "6edfd429-1ebb-40d3-a700-7341bad30f7d",
+      "name": "Send Text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        336,
+        400
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "active"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1824,
+        848
+      ],
+      "id": "d7c5bcea-bcb2-4019-a24d-f06aff327c7f",
+      "name": "Get Campaigns",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1189608011,
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1189608011"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "is_active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1600,
+        848
+      ],
+      "id": "68a5b72a-2f32-4fe3-abbf-268465d2a02c",
+      "name": "Get Users for Campaign",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "NBC Universal Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1031672459,
+          "mode": "list",
+          "cachedResultName": "conversations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=1031672459"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1088,
+        848
+      ],
+      "id": "3e5f0949-3c8c-4701-9661-3c38aa390af3",
+      "name": "Get Past Conversations for User",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "auVmTi51WqbH9phr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        624
+      ],
+      "id": "8efdcee9-c685-403f-9757-27211ce37578",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -368,
+        400
+      ],
+      "id": "f5c71479-c057-450e-b9e8-251a316f90af",
+      "name": "Prepare Chat Payload",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        704
+      ],
+      "id": "648056c9-401c-4c72-ba05-aabe8d3ab392",
+      "name": "Prepare Email Payload1",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        624
+      ],
+      "id": "9e3395a3-d91a-4daa-97ab-09d9253eb0fe",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        928
+      ],
+      "id": "34f5ec0c-deef-4ba0-ba35-828085e73f5d",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        928
+      ],
+      "id": "531874bb-641e-4bda-b42e-5c7e4f281942",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        560,
+        336
+      ],
+      "id": "2281e57b-0aa8-4679-bbd2-0dbe64a9e4e5",
+      "name": "Evaluation",
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "summary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        848
+      ],
+      "id": "5adfc796-6bb7-450e-b3dd-a7aaa2367a0a",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1376,
+        848
+      ],
+      "id": "fd63add8-429e-4c71-b362-92f41151ccf1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output[0].content[0].text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "preferred_channel",
+              "description": "Preferred channel for communication",
+              "required": true
+            },
+            {
+              "name": "script",
+              "description": "script for contacting customer"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -1152,
+        432
+      ],
+      "id": "6da2bab9-9983-4452-822f-51aa249b96c5",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        656
+      ],
+      "id": "0d1ed8f3-8050-4393-8804-3655051103c1",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://email-provider.example.com/send",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "f3c69ad6-6e3a-4512-a659-4498ac2d4e5e",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        336,
+        704
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Generate a script summary to use based on {{ $('Loop Over Items').item.json.preferred_channel }} channel for customer. \nThe new marketing campaign is: {{ $('Get Campaigns').item.json.campaign_name }} with description as: {{ $('Get Campaigns').item.json.offer_text }}\nPast conversations are: {{ $json.concatenated_summary }}\nOutput the information in following format:\n\n{\n\"preferred_channel\": <customer preferred channel based on config and past conversations>,\n\"script\": <the script to be used>\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        912
+      ],
+      "id": "a3859882-e7fa-4309-8b0c-e1601bb6d476",
+      "name": "Generate Script",
+      "credentials": {
+        "openAiApi": {
+          "id": "Vo6Fogy5rdDLVpML",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "844dcc2e-acf8-4146-8c4b-60f17a9947b0",
+              "name": "preferred_channel",
+              "value": "={{ $json.output.preferred_channel }}",
+              "type": "string"
+            },
+            {
+              "id": "f4efc46e-4407-4473-8a86-3f665440d833",
+              "name": "chatInput",
+              "value": "={{ $json.output.script }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        592
+      ],
+      "id": "23ce697e-3a8d-40f6-a12c-3087b72a252c",
+      "name": "Transform data",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "agent_id",
+              "value": "YOUR_ELEVENLABS_AGENT_ID"
+            },
+            {
+              "name": "agent_phone_number_id",
+              "value": "YOUR_ELEVENLABS_PHONE_ID"
+            },
+            {
+              "name": "to_number",
+              "value": "+1XXXXXXXXXX"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "xi-api-key",
+              "value": "REDACTED_ELEVENLABS_API_KEY"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "id": "bc8049e3-04b1-4053-81cd-6f055a3c3d0f",
+      "name": "ElevelLabs Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        0,
+        32
+      ]
+    }
+  ],
+  "pinData": {
+    "Information Extractor": [
+      {
+        "json": {
+          "output": {
+            "preferred_channel": "text",
+            "script": "Hello! We're excited to share our new marketing campaign with you: HHN Early Access. Kick off Halloween Horror Nights with 20% off select Thursday tickets! This is a great opportunity to enjoy the event with a nice discount. If you have any questions about ticket options, Express Pass benefits, or ride details during your visit, feel free to ask. We're here to help make your experience smooth and memorable!"
+          }
+        }
+      },
+      {
+        "json": {
+          "output": {
+            "preferred_channel": "email",
+            "script": "Subject: Get Early Access to Halloween Horror Nights with 20% Off!\n\nDear [Customer Name],\n\nWe’re excited to offer you an exclusive early access deal to kick off Halloween Horror Nights! Enjoy 20% off select Thursday tickets and get ready for a spook-tacular time.\n\nAs you may know from your interest in early park admission and maximizing your visit, this offer is a great way to enhance your experience. Remember, staying at Cabana Bay or other Universal Hotels can include benefits like early park admission, so be sure to check your package details.\n\nIf you have any questions about shuttle times, ticket bundles, or hotel packages, feel free to reach out. We’re happy to help you make the most of your visit!\n\nDon’t miss out – secure your tickets today and start planning your unforgettable Halloween Horror Nights experience.\n\nBest regards,\nUniversal Orlando Resort Team"
+          }
+        }
+      },
+      {
+        "json": {
+          "output": {
+            "preferred_channel": "voice",
+            "script": "Hello! We’re excited to let you know about our new HHN Early Access marketing campaign. You can kick off Halloween Horror Nights with 20% off select Thursday tickets. Since you've previously asked about rides for children under 8, stroller rentals, and family-friendly options, this early access offer is a great opportunity to plan a fun and comfortable visit for your whole family. If you have any questions about the best attractions for kids or need help reserving tickets, feel free to ask. We’re here to make your visit enjoyable and hassle-free!"
+          }
+        }
+      },
+      {
+        "json": {
+          "output": {
+            "preferred_channel": "text",
+            "script": "Hello! We’re excited to announce our new Halloween Horror Nights Early Access campaign. You can kick off the spooky season with 20% off select Thursday tickets. If you have any questions about ticket availability, event details, or would like recommendations for less crowded houses, feel free to ask. We’re also happy to update you on merchandise restocks and any AP discounts that may apply. Don’t forget to check the app for showtimes and scare zones to make the most of your visit. Let us know how we can assist you with your HHN experience!"
+          }
+        }
+      },
+      {
+        "json": {
+          "output": {
+            "preferred_channel": "email",
+            "script": "Subject: Early Access to Halloween Horror Nights – Save 20% on Select Thursdays!\n\nHi [Customer Name],\n\nWe’re excited to offer you early access to our Halloween Horror Nights event! Kick off the spooky season with 20% off select Thursday tickets. It’s the perfect chance to enjoy all the thrills and chills with a great discount.\n\nSince you’ve shown interest in annual pass details, blackout dates, and special promotions, we wanted to make sure you didn’t miss this exclusive offer. If you have any questions about your pass perks, blackout dates, or other upcoming promotions, feel free to reach out!\n\nReady to secure your spot? Click here to grab your discounted tickets today.\n\nStay spooky,\n[Company/Team Name]"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Campaigns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By Channel": {
+      "main": [
+        [
+          {
+            "node": "ElevelLabs Call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Chat Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Transform data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory (store)": {
+      "main": [
+        [
+          {
+            "node": "Send Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Text": {
+      "main": [
+        [
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Campaigns": {
+      "main": [
+        [
+          {
+            "node": "Get Users for Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Users for Campaign": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Past Conversations for User": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prepare Chat Payload",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Chat Payload": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory (store)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Payload1": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Prepare Chat Payload",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prepare Email Payload1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Prepare Email Payload1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation": {
+      "main": [
+        []
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Generate Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Past Conversations for User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Route By Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Payload1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevelLabs Call": {
+      "main": [
+        [
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d6e0bb9-effd-49bb-ac70-f2dac3bc4f19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "69e1ddac7a7b576688b1cd297256ec65998e2b52c5bc796852362e1682002b95"
+  },
+  "id": "A3RvetSaIahmeAFD",
+  "tags": []
+}
