@@ -2,13 +2,13 @@
 
 An agentic AI concierge for theme-park guests: guests can plan a trip, book dining and experiences, and get proactively reached out to about relevant offers — in natural language, across chat, text, email, and voice. A guest can say *"find me a dinner reservation near the kids' area on Saturday and add the character breakfast,"* and the agent interprets the request, checks availability through its tools, confirms, and books.
 
-Built as a graduate consulting project (NYU Stern Tech MBA) for **NBCUniversal Theme Parks**, and presented to NBCUniversal stakeholders. **My role:** I designed and prototyped the agentic concierge — the conversation design, the n8n agent/tool workflows, and the multichannel (including ElevenLabs voice) outreach. *(Team project — adjust this line to your exact contribution.)*
+Built as a graduate consulting project (NYU Stern Tech MBA) for **NBCUniversal Theme Parks**, and presented to NBCUniversal stakeholders. **My role:** I worked on all parts of this project, but particularly helped in defining the vision, thinking about the conversation design, building the n8n agent/tool workflows, and testing the multichannel (including ElevenLabs voice) outreach. 
 
 ---
 
 ## The problem
 
-Planning and navigating a theme-park visit is high-friction: guests juggle reservations, dining, ride schedules, add-ons, and offers across disconnected apps and channels. The concierge turns that into a single conversation — and can also reach *out* to guests at the right moment, on the channel they actually use.
+Planning and navigating a theme-park visit is high-friction: guests juggle reservations, dining, ride schedules, add-ons, and offers across disconnected apps and channels. It can sometimes distract the guest from the actual enjoyment of the experience in the moment.  The concierge helps to take away some of this stress and can also reach *out* to guests at the right moment, on the channel they actually use.
 
 ## What it does
 
@@ -47,12 +47,12 @@ Built in **n8n** as three complementary workflows:
 
 **Stack:** n8n (orchestration) · OpenAI (GPT-4.1-mini) + Google Gemini · Model Context Protocol (MCP) · ElevenLabs (voice) · Google Sheets (prototype data layer) · Lovable (frontend prototype).
 
-## Honest scope & limitations
+## Scope & limitations
 
-- **Prototype / proof-of-concept**, not a production system — built to demonstrate the experience and architecture.
-- **Prototype data only.** The data layer is a Google Sheet with sample park data we modeled; it is **not** connected to any real NBCUniversal system and contains no real guest data.
-- **Team project.** Built with a Stern MBA consulting team; see the role note above.
-- **Credentials redacted.** API keys, resource IDs (ElevenLabs agent/phone, Google Sheet), and a test phone number have been replaced with placeholders (`REDACTED` / `YOUR_…`). To run it, add your own credentials in n8n.
+- **Prototype / proof-of-concept**: this is not a production system, but built to demonstrate the experience and architecture.
+- **Prototype data only.**: the data layer is a Google Sheet with sample park data we modeled; it is not connected to any real NBCUniversal system as of now. 
+- **Team project.**: this was built with a Stern MBA consulting team; see the role note above.
+- **Credentials redacted.**: API keys, resource IDs (ElevenLabs agent/phone, Google Sheet), and a test phone number have been replaced with placeholders (`REDACTED` / `YOUR_…`). To run it, add your own credentials in n8n.
 
 ## Files
 
