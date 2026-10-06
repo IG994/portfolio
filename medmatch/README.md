@@ -2,7 +2,7 @@
 
 MedMatch is a conversational AI agent that helps people find the right doctor without wading through the complexity of healthcare search. A user describes what they need in plain language ("I need a primary care doctor near 10016 who takes Cigna"), and the agent interprets the request, retrieves matching providers, and returns a clear, ranked shortlist — while staying inside firm safety guardrails.
 
-Built as a graduate product project (NYU Stern MBA, *Foundations of AI Agents*). **My role:** I owned the **evaluation**, created the **initial n8n agent flow**, and contributed across the build.
+Built as a graduate product project (NYU Stern MBA, *Foundations of AI Agents*). **My role:** I owned the evaluation strategy, created the initial n8n agent flow, and contributed across the build.
 
 ---
 
@@ -56,10 +56,10 @@ User message ──> Webhook
 
 The workflow export is in [`workflow/medmatch-flow.json`](workflow/medmatch-flow.json).
 
-## Honest scope & limitations
+## Scope & limitations
 
-- **Provider data is a sample dataset**, not a live integration. The prototype reads a fixed set of mock providers; a production version would connect a live provider source (e.g., a Zocdoc/Apify feed) behind the same interface.
-- **Prototype, not a shipped product** — built to validate the agent design, the discovery flow, and the safety behavior, not for clinical use.
+- **Provider data is a sample dataset**: this is not not a live integration. The prototype reads a fixed set of mock providers; a production version would connect a live provider source (e.g., a Zocdoc/Apify feed) behind the same interface.
+- **Prototype, not a shipped product**: this is built to validate the agent design, the discovery flow, and the safety behavior. It is not inteded for clinical use.
 - **Not a medical device and gives no medical advice** — see guardrails above.
 
 ## Evaluation
