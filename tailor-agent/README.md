@@ -1,20 +1,20 @@
 # 🧵 Tailor Agent
 
-An AI agent that makes getting clothes tailored easy — from a plain-language brief to a spec a tailor can actually work from.
+An AI agent that makes getting clothes tailored easy - from a plain-language brief to a spec a tailor can actually work from.
 
 ## The problem
 
-In many places, getting clothes made by a tailor is the norm — but it's a multi-step, high-friction process: figuring out the design, the fabric, the style, **your measurements**, finding a good tailor, and communicating all of it clearly. Two of the most painful parts:
-- **Measurements** — nobody knows theirs, and giving them to a tailor is a hassle.
-- **Communicating the design** to the tailor in a form they can actually use.
+In many places, getting special clothes made by a tailor is very much the norm. I can recount the number of times I've stepped into a small tailor's shop to get a wedding outfit or graduation gown made from scratch. While the output feels more "you" than a large retailer, it's often a multi-step, high-friction process: figuring out the design, the fabric, the style, your measurements, finding a good tailor, and communicating all of it clearly. This projects focuses on the two parts that I have found the most challenging in the past:
+- **Measurements** — these are difficult to know and can be everchanging, and giving them to a tailor is a hassle.
+- **Communicating the design** to the tailor in a form they can actually use and bring to life. 
 
 Example use case: *"I have a wedding coming up and need an outfit made."* → the agent takes it from idea to a tailor-ready brief.
 
 ## What it does
 
 **Phase 1 (core — build first, no external API needed):**
-1. **Brief → structured style spec** — user describes occasion (e.g., wedding), garment, vibe, colors, fabric, budget; the agent extracts a clean structured spec.
-2. **Measurement estimation** — estimate measurements from the sizes/brands the user already wears (size-chart mapping) or from a garment that fits well. Always output as **estimates with confidence + a "confirm at fitting" note** — a strong starting point, not a replacement for a final fitting.
+1. **Brief → structured style spec** - the user describes the occasion (e.g., wedding), garment, vibe, colors, fabric, budget; the agent extracts a clean structured spec.
+2. **Measurement estimation** - estimate measurements from the sizes/brands the user already wears (size-chart mapping) or from a garment that fits well. Always output as estimates with confidence + a "confirm at fitting" note. 
 3. **Tailor-ready spec sheet** — design description + fabric + estimated measurements + construction notes, formatted the way a tailor expects.
 4. **Evals** — score brief-adherence and measurement-estimate sanity.
 
